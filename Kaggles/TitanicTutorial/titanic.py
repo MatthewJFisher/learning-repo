@@ -10,6 +10,7 @@ import sys
 import tensorflow as tf
 import numpy as np
 import pandas as pd
+import itertools
 
 #Kaggle Titanic intro competition
 
@@ -19,7 +20,7 @@ column_names = ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibS
 
 df_train = pd.read_csv("file://localhost/home/matthew/Downloads/train.csv", names=column_names, skiprows=1, nrows=500)
 df_test = pd.read_csv("file://localhost/home/matthew/Downloads/train.csv", names=column_names, skiprows=501)
-
+df_predict = pd.read_csv("file://localhost/home/matthew/Downloads/test.csv")
 
 #feature columns
 gender = tf.feature_column.categorical_column_with_vocabulary_list(
@@ -54,6 +55,16 @@ def input_fn(df_data, num_epochs, shuffle):
     return tf.estimator.inputs.pandas_input_fn(x=df_data, y=labels,
         batch_size=100, num_epochs=num_epochs, shuffle=shuffle,
         num_threads=1)
+def input_fn_p(df_data, num_epochs, shuffle):
+    # df_data = pd.read_csv(data_file)
+    df_data = df_data.drop(['Name','Ticket','PassengerId','Cabin'], axis=1)
+    df_data = df_data.dropna(how="any", axis=0)
+
+    #labels = df_data.filter(items=['Survived'])
+    #df_data = df_data.drop(['Survived'], axis=1)
+    return tf.estimator.inputs.pandas_input_fn(x=df_data,
+        batch_size=100, num_epochs=num_epochs, shuffle=shuffle,
+        num_threads=1)
 
 def train_and_eval(model_dir, train_steps, train_data, test_data):
     #model_dir = tempfile.mkdtemp() if not model_dir else model_dir
@@ -67,4 +78,15 @@ def train_and_eval(model_dir, train_steps, train_data, test_data):
     for key in sorted(results):
         print("%s: %s" % (key, results[key]))
 
+def prediction(model_dir, predict_data):
+    m = build_estimator(model_dir)
+    y = m.predict(input_fn=input_fn_p(predict_data, num_epochs=1, shuffle=False))
+    return y
+
 train_and_eval('./tmp', 2000, df_train, df_test)
+y = prediction('./tmp', df_predict)
+outfile = open('test_results.out', 'w')
+for p in y:
+    for key,val in p.items():
+        outfile.write(str(key)+" "+str(val[0])+"\n")
+    outfile.write("\n")
