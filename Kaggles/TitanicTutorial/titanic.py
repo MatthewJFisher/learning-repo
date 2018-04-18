@@ -3,6 +3,8 @@
 Created on Mon Sep 18 20:01:21 2017
 
 @author: Matthew
+
+Based on tensorflow logistic regression example code
 """
 import tempfile
 #import argparse
