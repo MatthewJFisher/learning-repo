@@ -19,10 +19,8 @@ eS = pd.Series(np.zeros(len(df_train), dtype=int),index=df_train.index)
 df_train = df_train.assign(eS=eS.values)
 df_train = df_train.assign(eC=eS.values)
 df_train = df_train.assign(eQ=eS.values)
-# I realize gender is binary in this data, but I decided to use separate one-hot features
-df_train = df_train.assign(male=eS.values)
 df_train = df_train.assign(female=eS.values)
-df_train.loc[df_train.Sex=='male', 'male'] = 1
+
 df_train.loc[df_train.Sex=='female', 'female'] = 1
 df_train.loc[df_train.Embarked=='S', 'eS'] = 1
 df_train.loc[df_train.Embarked=='C', 'eC'] = 1
